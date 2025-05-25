@@ -3,3 +3,13 @@
 .env
 .streamlit/secrets.toml
 __pycache__
+/env
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.log
+POC/university_course_information.ipynb
+__pycache__/
+modules/__pycache__/
