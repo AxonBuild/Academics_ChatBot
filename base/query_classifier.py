@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
-try:
-    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-except:
-    pass
+# try:
+#     os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+# except:
+#     pass
 class QueryClassification(BaseModel):
     """Classification of a user query to determine which module should handle it"""
     user_query: str = Field(..., description="The original user query")
@@ -30,8 +30,8 @@ def get_classifier_agent():
     global classifier_agent
     
     if classifier_agent is None:
-        # Set API key from Streamlit secrets
-        os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+        # # Set API key from Streamlit secrets
+        # os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
         
         classifier_agent = pydantic_ai.Agent(
     "openai:gpt-4.1-nano",  # Can be configured based on environment

@@ -102,6 +102,9 @@ def get_module_response(query: str, language: str = "English") -> str:
         reasoning = classification.reasoning
         
         logger.info(f"Query classified as '{module_name}' with confidence {confidence}")
+        message_history = []
+        if "messages" in st.session_state and isinstance(st.session_state.messages, list):
+            message_history = st.session_state.messages[-10:] if len(st.session_state.messages) > 10 else st.session_state.messages
         
         # Get the response function for the module
         # Special handling for library module
@@ -187,7 +190,7 @@ def get_module_response(query: str, language: str = "English") -> str:
                 model = f"openai/{model}"
         
         # Use RAG pipeline to get response
-        result = rag_pipeline_simple(modified_query, collection_name, model)
+        result = rag_pipeline_simple(modified_query, collection_name, model,message_history=message_history)
         response = result["response"]
         
         # Add debug info if in development

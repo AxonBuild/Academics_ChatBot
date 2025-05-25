@@ -10,19 +10,19 @@ import streamlit as st
 load_dotenv()
 
 # Set up OpenRouter with OpenAI client
-OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY,
 )
 
-OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 embeddings_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Connect to Qdrant (local or cloud)
 qdrant_client = QdrantClient(
-    url=st.secrets.get("QDRANT_URL"),
-    api_key=st.secrets.get("QDRANT_API_KEY"),
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("QDRANT_API_KEY"),
 )
 
 def generate_embedding(text: str) -> List[float]:
@@ -67,8 +67,8 @@ def search_qdrant_simple(query: str, collection_name: str, limit: int = 10) -> L
 
     return results
 
-def generate_response(query: str, context: List[Dict[str, Any]], model: str = "openai/gpt-4o-mini") -> str:
-    """Generate a response using OpenAI based on retrieved context."""
+def generate_response(query: str, context: List[Dict[str, Any]], model: str = "openai/gpt-4o-mini", message_history=None) -> str:
+    """Generate a response using OpenAI based on retrieved context and message history."""
     # Prepare context text from search results
     start_time = time.time()
     context_text = "\n\n".join([
@@ -84,19 +84,33 @@ def generate_response(query: str, context: List[Dict[str, Any]], model: str = "o
     IMPORTANT GUIDELINES:
     1. Provide ONLY ONE definitive answer based on the highest relevance matches in the context.
     2. If multiple potential answers exist, choose the one with the strongest evidence in the retrieved documents.
+    3. Maintain conversational context by referring to the message history when appropriate.
 
     Your goal is to provide the single most accurate answer as if you were an official university representative.
     """
 
     print("Used Model: ", model)
-    user_prompt = f"Question: {query}\n\nContext:\n{context_text}"
+    
+    # Build messages array including history if available
+    messages = [{"role": "system", "content": system_prompt}]
+    
+    # Add up to 10 most recent messages from history if available
+    if message_history and isinstance(message_history, list):
+        # Only take the 10 most recent messages (5 exchanges)
+        recent_history = message_history[-10:] if len(message_history) > 10 else message_history
+        # Add them to our messages list
+        for msg in recent_history:
+            if msg.get("role") in ["user", "assistant"] and msg.get("content"):
+                messages.append({"role": msg["role"], "content": msg["content"]})
+    
+    # Add the current query with context
+    user_prompt = f"Question: {query}\n\nContext from university documents:\n{context_text}"
+    messages.append({"role": "user", "content": user_prompt})
+    
     start_time_1 = time.time()
     response = client.chat.completions.create(
-        model=model,  # Use the model passed as parameter
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
+        model=model,
+        messages=messages,
         temperature=0.2
     )
     response_time = time.time() - start_time_1
@@ -104,15 +118,16 @@ def generate_response(query: str, context: List[Dict[str, Any]], model: str = "o
 
     return response.choices[0].message.content
 
-def rag_pipeline_simple(query: str, collection_name: str = "admission_course_guide", model: str = "openai/gpt-4o-mini"):
+def rag_pipeline_simple(query: str, collection_name: str = "admission_course_guide", model: str = "openai/gpt-4o-mini", message_history=None):
     """Complete RAG pipeline from user query to response."""
     print(f"Original query: {query}")
+    #print(f"message_history: {message_history}")
 
     # Search Qdrant with a single query
     search_results = search_qdrant_simple(query, collection_name, limit=3)
 
     # Generate response
-    response = generate_response(query, search_results, model)
+    response = generate_response(query, search_results, model, message_history)
 
     return {
         "original_query": query,
