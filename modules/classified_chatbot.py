@@ -97,8 +97,7 @@ def generate_response(query: str, context: List[Dict[str, Any]], model: str = "o
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        temperature=0.2,
-        max_tokens=500
+        temperature=0.2
     )
     response_time = time.time() - start_time_1
     print(f"Response time: {response_time} seconds")
