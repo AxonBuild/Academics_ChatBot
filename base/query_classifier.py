@@ -34,7 +34,7 @@ def get_classifier_agent():
         # os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
         
         classifier_agent = pydantic_ai.Agent(
-    "openai:gpt-4.1-nano",  # Can be configured based on environment
+    "openai:gpt-4o-mini",  # Can be configured based on environment
     output_type=QueryClassification,
     system_prompt="""
     You are a specialized query classifier for a university academic chatbot system.
@@ -83,6 +83,8 @@ def get_classifier_agent():
     - What is the cost for renting book “1984”? (high confidence)
     - How much does the book “who moved my cheese” cost? (high confidence)
     - How can I check if a book is available in the library? (high confidence)
+    - Can you reserve "Rule the World" book? (high confidence)
+    - I want to rent the book "Rule the World" (high confidence)
 
     ## General
     - "Hello, how are you today?" → general_response (high confidence)

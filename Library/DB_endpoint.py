@@ -18,7 +18,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 print(f"OPENROUTER_API_KEY exists: {OPENROUTER_API_KEY is not None}")
 
 # Path to the database file (will be created in memory)
-DB_NAME = ":memory:"  # Use in-memory database for temporary storage
+DB_NAME = "library.db"  # Use in-memory database for temporary storage
 
 def create_db_from_xlsx(xlsx_file_path):
     """
@@ -252,14 +252,9 @@ def library_query(conn, user_query):
 
 def db_endpoint(user_query):
 
-    xlsx_file_path = "data/raw/books_catalog.xlsx"
-    
-    # Expand user directory if needed
-    xlsx_file_path = os.path.expanduser(xlsx_file_path)
-    
+    db_path = "library.db"
     try:
-        conn = create_db_from_xlsx(xlsx_file_path)
-        print("\nDatabase created successfully. Ready for queries.")
+        conn = sqlite3.connect(db_path)
         results = library_query(conn, user_query)
         
         print("\n--- Results ---")

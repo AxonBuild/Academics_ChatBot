@@ -7,8 +7,6 @@ __pycache__
 *.pyc
 *.pyo
 *.pyd
-*.db
-*.sqlite
 *.log
 POC/university_course_information.ipynb
 __pycache__/
