@@ -86,6 +86,11 @@ def generate_response(query: str, context: List[Dict[str, Any]], model: str = "o
     2. If multiple potential answers exist, choose the one with the strongest evidence in the retrieved documents.
     3. Maintain conversational context by referring to the message history when appropriate.
 
+    ### PLEASE NOTE
+    If you do not find anything in the reterived documents, you should say
+    
+    "It seems we do not have that information at the moment". DO NOT give/say anything else rathar than this.
+
     Your goal is to provide the single most accurate answer as if you were an official university representative.
     """
 
